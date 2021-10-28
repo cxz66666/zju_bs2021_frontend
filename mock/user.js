@@ -116,12 +116,12 @@ export default {
     },
   ],
   'POST /api/login/account': async (req, res) => {
-    const { password, username, type } = req.body;
-    await waitTime(2000);
+    const { secret, account, email, type } = req.body;
+    await waitTime(1000);
 
-    if (password === 'ant.design' && username === 'admin') {
+    if (secret === 'ant.design' && account === 'admin') {
       res.send({
-        status: 'ok',
+        status: 'success',
         type,
         currentAuthority: 'admin',
       });
@@ -129,9 +129,9 @@ export default {
       return;
     }
 
-    if (password === 'ant.design' && username === 'user') {
+    if (secret === 'ant.design' && account === 'user') {
       res.send({
-        status: 'ok',
+        status: 'success',
         type,
         currentAuthority: 'user',
       });
@@ -139,9 +139,9 @@ export default {
       return;
     }
 
-    if (type === 'mobile') {
+    if (secret === 'ant.design' && email === 'admin') {
       res.send({
-        status: 'ok',
+        status: 'success',
         type,
         currentAuthority: 'admin',
       });
@@ -149,9 +149,20 @@ export default {
       return;
     }
 
+    if (secret === 'ant.design' && email === 'user') {
+      res.send({
+        status: 'success',
+        type,
+        currentAuthority: 'user',
+      });
+      access = 'user';
+      return;
+    }
+
     res.send({
       status: 'error',
       type,
+      msg: '用户名或密码错误',
       currentAuthority: 'guest',
     });
     access = 'guest';
@@ -165,7 +176,7 @@ export default {
   },
   'POST /api/register': (req, res) => {
     res.send({
-      status: 'ok',
+      status: 'success',
       currentAuthority: 'user',
       success: true,
     });
