@@ -7,6 +7,7 @@ import { BookOutlined, LinkOutlined } from '@ant-design/icons';
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
 const registerPath = '/user/register';
+const registerResultPath = '/user/register-result';
 
 const nonLoginPath = ['/user/login', '/user/register'];
 
@@ -23,6 +24,7 @@ export async function getInitialState() {
   const fetchUserInfo = async () => {
     try {
       const msg = await queryCurrentUser();
+      console.log(msg);
       return msg.data;
     } catch (error) {
       history.push(loginPath);

@@ -7,6 +7,6 @@ const Settings = {
   title: 'Annotation OL',
   splitMenus: false,
   fixSiderbar: true,
-  logo: 'https://i.loli.net/2021/10/27/kJWcOx3RA6GwFEV.jpg',
+  logo: 'https://i.loli.net/2021/10/29/vnqkrDB5L2f1YtC.png',
 };
 export default Settings;

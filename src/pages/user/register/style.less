@@ -1,7 +1,7 @@
 @import '~antd/es/style/themes/default.less';
 
 .main {
-  width: 368px;
+  max-width: 800px;
   margin: 0 auto;
 
   h3 {
@@ -61,18 +61,17 @@
 
 
 .container {
-  display: flex;
-  flex-direction: column;
   height: 100vh;
+  padding-top: 32px;
+  padding-bottom: 32px;
   overflow: auto;
   background: @layout-body-background;
+  display:flex;
+  flex-direction: column;
+// justify-content:space-between;
 }
 
 
-.content {
-  flex: 1;
-  padding: 32px 0;
-}
 
 @media (min-width: @screen-md-min) {
   .container {
@@ -82,9 +81,7 @@
     background-size: 100%;
   }
 
-  .content {
-    padding: 32px 0 24px;
-  }
+
 }
 
 

@@ -156,7 +156,7 @@ const Login = () => {
                   size: 'large',
                   prefix: <UserOutlined className={styles.prefixIcon} />,
                 }}
-                placeholder="用户名"
+                placeholder="邮箱"
                 rules={[
                   {
                     required: true,

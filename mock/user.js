@@ -174,11 +174,15 @@ export default {
       success: true,
     });
   },
-  'POST /api/register': (req, res) => {
+  'POST /api/register': async (req, res) => {
+    await waitTime(2000);
+    access = 'user';
     res.send({
-      status: 'success',
-      currentAuthority: 'user',
-      success: true,
+      data: {
+        status: 'success',
+        currentAuthority: 'user',
+        success: true,
+      },
     });
   },
   'GET /api/500': (req, res) => {

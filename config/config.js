@@ -50,6 +50,7 @@ export default defineConfig({
           name: 'register-result',
           icon: 'smile',
           path: '/user/register-result',
+          layout: false,
           component: './user/register-result',
         },
         {
@@ -304,6 +305,19 @@ export default defineConfig({
           icon: 'smile',
           path: '/editor/koni',
           component: './editor/koni',
+        },
+      ],
+    },
+    {
+      path: '/tag',
+      name: 'Tag页',
+      icon: 'profile',
+      routes: [
+        {
+          name: '标记管理',
+          icon: 'smile',
+          path: '/tag/tag-list',
+          component: './tag/ClassTableList',
         },
       ],
     },
