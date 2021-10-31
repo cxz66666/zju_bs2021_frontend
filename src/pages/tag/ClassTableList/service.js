@@ -38,3 +38,19 @@ export async function removeRule(data, options) {
     ...(options || {}),
   });
 }
+
+export async function removeTag(data, options) {
+  return request('/api/class/tag/delete', {
+    data,
+    method: 'DELETE',
+    ...(options || {}),
+  });
+}
+
+export async function addTag(data, options) {
+  return request('/api/class/tag/create', {
+    data,
+    method: 'POST',
+    ...(options || {}),
+  });
+}

@@ -23,7 +23,7 @@ const GlobalHeaderRight = () => {
 
   return (
     <Space className={className}>
-      <HeaderSearch
+      {/* <HeaderSearch
         className={`${styles.action} ${styles.search}`}
         placeholder="站内搜索"
         defaultValue="umi ui"
@@ -47,11 +47,11 @@ const GlobalHeaderRight = () => {
         ]} // onSearch={value => {
         //   console.log('input', value);
         // }}
-      />
+      /> */}
       <span
         className={styles.action}
         onClick={() => {
-          window.open('https://pro.ant.design/docs/getting-started');
+          window.open('https://github.com/cxz66666/zju_bs2021_frontend');
         }}
       >
         <QuestionCircleOutlined />

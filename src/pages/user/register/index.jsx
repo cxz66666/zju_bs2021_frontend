@@ -125,10 +125,19 @@ const Register = () => {
   };
 
   const { loading: submitting, run: register } = useRequest(fakeRegister, {
+    formatResult: (d) => d,
     manual: true,
     onSuccess: async (data, params) => {
       console.log(data, params);
-      if (data.status === 'success') {
+      if (!data) {
+        notification.error({
+          duration: 4,
+          description: '未获取到返回值，请稍后再试',
+          message: '注册失败',
+        });
+        return;
+      }
+      if (data.status && data.status === 'success') {
         message.success('注册成功！');
         await fetchUserInfo();
         history.push({
@@ -137,9 +146,21 @@ const Register = () => {
             account: params.userEmail,
           },
         });
+      } else {
+        notification.error({
+          duration: 5,
+          message: '注册失败',
+          description: data.msg || '未知错误',
+        });
       }
     },
     onError: (error, params) => {
+      notification.error({
+        duration: 4,
+        description: '未获取到返回值，请稍后再试',
+        message: '注册失败',
+      });
+      return;
       console.log(error, params);
     },
   });
