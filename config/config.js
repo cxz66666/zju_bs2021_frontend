@@ -322,8 +322,35 @@ export default defineConfig({
       ],
     },
     {
+      path: '/users',
+      name: '用户管理',
+      icon: 'smile',
+      routes: [
+        {
+          name: '用户列表',
+          icon: 'smile',
+          path: '/users/user-list',
+          component: './users/UserList',
+          access: 'canAdmin',
+        },
+      ],
+    },
+    {
       path: '/',
       redirect: '/dashboard/analysis',
+    },
+    {
+      name: '上传管理',
+      icon: 'smile',
+      path: '/upload',
+      routes: [
+        {
+          name: '上传图片',
+          icon: 'smile',
+          path: '/upload/image',
+          component: './upload/Upload',
+        },
+      ],
     },
     {
       component: '404',

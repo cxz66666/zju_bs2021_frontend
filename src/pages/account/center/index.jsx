@@ -8,6 +8,33 @@ import Articles from './components/Articles';
 import Applications from './components/Applications';
 import { queryCurrent } from './service';
 import styles from './Center.less';
+import { fakeUserNotice } from './_mock.js';
+const fakeTag = [
+  {
+    key: '0',
+    label: '很有想法的',
+  },
+  {
+    key: '1',
+    label: '专注设计',
+  },
+  {
+    key: '2',
+    label: '辣~',
+  },
+  {
+    key: '3',
+    label: '大长腿',
+  },
+  {
+    key: '4',
+    label: '川妹子',
+  },
+  {
+    key: '5',
+    label: '海纳百川',
+  },
+];
 const operationTabList = [
   {
     key: 'articles',
@@ -130,11 +157,15 @@ const TagList = ({ tags }) => {
 const Center = () => {
   const [tabKey, setTabKey] = useState('articles'); //  获取用户信息
 
-  const { data: currentUser, loading } = useRequest(() => {
-    return queryCurrent();
+  const { data: currentUser, loading } = useRequest(queryCurrent, {
+    formatResult: (e) => {
+      e.data.notice = fakeUserNotice;
+      console.log(e);
+      return e.data;
+    },
   }); //  渲染用户信息
 
-  const renderUserInfo = ({ title, group, geographic }) => {
+  const renderUserInfo = ({ userEmail, userPhone, geographic }) => {
     return (
       <div className={styles.detail}>
         <p>
@@ -143,7 +174,7 @@ const Center = () => {
               marginRight: 8,
             }}
           />
-          {title}
+          {userEmail}
         </p>
         <p>
           <ClusterOutlined
@@ -151,7 +182,7 @@ const Center = () => {
               marginRight: 8,
             }}
           />
-          {group}
+          {userPhone}
         </p>
         <p>
           <HomeOutlined
@@ -163,7 +194,7 @@ const Center = () => {
             (
               geographic || {
                 province: {
-                  label: '',
+                  label: '浙江省',
                 },
               }
             ).province.label
@@ -172,7 +203,7 @@ const Center = () => {
             (
               geographic || {
                 city: {
-                  label: '',
+                  label: '杭州市',
                 },
               }
             ).city.label
@@ -212,13 +243,13 @@ const Center = () => {
             {!loading && currentUser && (
               <div>
                 <div className={styles.avatarHolder}>
-                  <img alt="" src={currentUser.avatar} />
-                  <div className={styles.name}>{currentUser.name}</div>
-                  <div>{currentUser?.signature}</div>
+                  <img alt="" src={'https://i.loli.net/2021/10/27/kJWcOx3RA6GwFEV.jpg'} />
+                  <div className={styles.name}>{currentUser.userName}</div>
+                  <div>{'Zero is start'}</div>
                 </div>
                 {renderUserInfo(currentUser)}
                 <Divider dashed />
-                <TagList tags={currentUser.tags || []} />
+                <TagList tags={fakeTag} />
                 <Divider
                   style={{
                     marginTop: 16,

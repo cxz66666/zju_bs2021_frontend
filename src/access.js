@@ -8,13 +8,12 @@ const SysAdmin = 3;
 export default function access(initialState) {
   const { currentUser } = initialState || {};
   return {
-    canAdmin:
-      currentUser && (currentUser.user_type === Admin || currentUser.user_type === SysAdmin),
-    canSysAdmin: currentUser && currentUser.user_type === SysAdmin,
+    canAdmin: currentUser && (currentUser.userType === Admin || currentUser.userType === SysAdmin),
+    canSysAdmin: currentUser && currentUser.userType === SysAdmin,
     canStaff:
       currentUser &&
-      (currentUser.user_type === Staff ||
-        currentUser.user_type === Admin ||
-        currentUser.user_type === SysAdmin),
+      (currentUser.userType === Staff ||
+        currentUser.userType === Admin ||
+        currentUser.userType === SysAdmin),
   };
 }
