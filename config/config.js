@@ -345,10 +345,16 @@ export default defineConfig({
       path: '/upload',
       routes: [
         {
-          name: '上传图片',
+          name: '上传文件',
           icon: 'smile',
           path: '/upload/image',
           component: './upload/Upload',
+        },
+        {
+          name: '图片预览',
+          icon: 'smile',
+          path: '/upload/list',
+          component: './upload/List',
         },
       ],
     },

@@ -1,11 +1,8 @@
 import { PageContainer } from '@ant-design/pro-layout';
 import { useState, useEffect } from 'react';
-import { Spin, Row, Col } from 'antd';
+import { Spin, Button, Row, Statistic } from 'antd';
 import styles from './index.less';
-import UploadPictureStyle from './UploadPictureStyle';
-import UploadDrag from './UploadDrag';
-import AlertDescription from './AlertDescription';
-import AlertDescriptionTwo from './AlertDescriptionTwo';
+import ListInfiniteLoad from './ListInfiniteLoad';
 export default () => {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -15,15 +12,24 @@ export default () => {
   }, []);
   return (
     <PageContainer
-      content="在此处上传的图片会统一保存到公共图片区域，上传后可以在图片查看中查看"
+      title="预览公共区域图片"
+      content={
+        <Row>
+          <Statistic title="Status" value="Pending" />
+          <Statistic
+            title="Price"
+            prefix="$"
+            value={568.08}
+            style={{
+              margin: '0 32px',
+            }}
+          />
+          <Statistic title="Balance" prefix="$" value={3345.08} />
+        </Row>
+      }
       className={styles.main}
     >
-      <AlertDescription />
-      <UploadPictureStyle />
-      <AlertDescriptionTwo />
-
-      <UploadDrag />
-
+      <ListInfiniteLoad />
       <div
         style={{
           paddingTop: 100,

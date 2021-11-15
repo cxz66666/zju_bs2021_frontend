@@ -29,10 +29,9 @@ export default () => (
         <p className="ant-upload-drag-icon">
           <InboxOutlined />
         </p>
-        <p className="ant-upload-text">Click or drag file to this area to upload</p>
+        <p className="ant-upload-text">点击或拖拽文件到该区域内</p>
         <p className="ant-upload-hint">
-          Support for a single or bulk upload. Strictly prohibit from uploading company data or
-          other band files
+          注意请不要在此处上传图片文件！请在上方上传图片处进行图片上传
         </p>
       </Dragger>
     </div>

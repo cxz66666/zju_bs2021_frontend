@@ -2,24 +2,10 @@ import React from 'react';
 import styles from './index.less';
 import { Upload, Button } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-const fileList = [
-  {
-    uid: '-1',
-    name: 'xxx.png',
-    status: 'done',
-    url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-    thumbUrl: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-  },
-  {
-    uid: '-2',
-    name: 'yyy.png',
-    status: 'error',
-  },
-];
+
 const props2 = {
-  action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+  action: '/api/upload/image',
   listType: 'picture',
-  defaultFileList: [...fileList],
   className: 'upload-list-inline',
   beforeUpload: (file) => {
     if (file.type !== 'image/png' && file.type != 'image/jpeg') {
@@ -27,7 +13,24 @@ const props2 = {
     }
     return file.type === 'image/png' || file.type == 'image/jpeg' ? true : Upload.LIST_IGNORE;
   },
+  name: 'images',
+  data: {
+    id: 0,
+  },
   multiple: true,
+  accept: '.jpg,.png,.jpeg',
+  onPreview: async (file) => {
+    let src = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file.originFileObj);
+      reader.onload = () => resolve(reader.result);
+    });
+
+    const image = new Image();
+    image.src = src;
+    const imgWindow = window.open(src);
+    imgWindow.document.write(image.outerHTML);
+  },
 };
 export default () => (
   <div className={styles.container}>

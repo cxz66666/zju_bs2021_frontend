@@ -112,6 +112,7 @@
     "mockjs": "^1.0.1-beta3",
     "prettier": "^2.3.2",
     "puppeteer-core": "^8.0.0",
+    "react-infinite-scroller": "^1.2.4",
     "stylelint": "^13.0.0",
     "typescript": "^4.2.2"
   },
