@@ -1,32 +1,57 @@
 import React from 'react';
 import styles from './index.less';
-import { List, message, Avatar, Spin } from 'antd';
-import { fetchData } from './service';
+import { List, message, Avatar, Spin, notification, Card } from 'antd';
+import { fetchListData } from './service';
 import InfiniteScroll from 'react-infinite-scroller';
 const fakeDataUrl = 'https://randomuser.me/api/?results=5&inc=name,gender,email,nat&noinfo';
-
+const Meta = Card.Meta;
 class InfiniteListExample extends React.Component {
-  state = {
-    data: [],
-    loading: false,
-    hasMore: true,
-  };
+  constructor() {
+    super();
+    this.state = {
+      data: [],
+      loading: false,
+      hasMore: true,
+      total: 0,
+      pageSize: 20,
+      current: 1,
+    };
+  }
 
   componentDidMount() {
-    this.fetchData((res) => {
-      this.setState({
-        data: res.results,
+    try {
+      this.fetchData((res) => {
+        console.log(res);
+        if (res.status === 'success') {
+          this.setState({
+            data: res.data.data,
+            total: res.data.total,
+            current: this.state.current + 1,
+          });
+        } else {
+          notification.error({
+            duration: 4,
+            message: '数据加载失败',
+            description: '数据加载失败，请稍后重试',
+          });
+        }
       });
-    });
+    } catch (error) {
+      notification.error({
+        duration: 4,
+        message: '数据加载失败',
+        description: '数据加载失败，请稍后重试',
+      });
+    }
   }
 
   fetchData = (callback) => {
-    fetchData(
-      { current: 1, pageSize: 20 },
+    fetchListData(
+      { current: this.state.current, pageSize: this.state.pageSize },
       {
         contentType: 'application/json',
       },
-    );
+    ).then((r) => callback(r));
   };
   handleInfiniteOnLoad = () => {
     let { data } = this.state;
@@ -34,22 +59,47 @@ class InfiniteListExample extends React.Component {
       loading: true,
     });
 
-    if (data.length > 14) {
-      message.warning('Infinite List loaded all');
-      this.setState({
-        hasMore: false,
-        loading: false,
+    try {
+      this.fetchData((res) => {
+        console.log(res);
+        if (res.status === 'success') {
+          this.setState({
+            data: this.state.data.concat(res.data.data),
+            total: res.data.total,
+            current: this.state.current + 1,
+            loading: false,
+          });
+          if (res.data.data.length < this.state.pageSize) {
+            notification.warning({
+              duration: 5,
+              description: '已经到底了',
+            });
+            this.setState({ hasMore: false });
+          }
+          console.log(this.state.data.concat(res.data.data));
+        } else {
+          notification.error({
+            duration: 4,
+            message: '数据加载失败',
+            description: '数据加载失败，请稍后重试',
+          });
+          this.setState({
+            loading: false,
+            data: [],
+          });
+        }
       });
-      return;
+    } catch (error) {
+      notification.error({
+        duration: 4,
+        message: '数据加载失败',
+        description: '数据加载失败，请稍后重试',
+      });
+      this.setState({
+        loading: false,
+        data: [],
+      });
     }
-
-    this.fetchData((res) => {
-      data = data.concat(res.results);
-      this.setState({
-        data,
-        loading: false,
-      });
-    });
   };
 
   render() {
@@ -60,22 +110,34 @@ class InfiniteListExample extends React.Component {
           pageStart={0}
           loadMore={this.handleInfiniteOnLoad}
           hasMore={!this.state.loading && this.state.hasMore}
-          useWindow={false}
         >
           <List
             dataSource={this.state.data}
-            renderItem={(item) => (
-              <List.Item key={item.id}>
-                <List.Item.Meta
-                  avatar={
-                    <Avatar src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
-                  }
-                  title={<a href="https://ant.design">{item.name.last}</a>}
-                  description={item.email}
-                />
-                <div>Content</div>
-              </List.Item>
-            )}
+            grid={{
+              gutter: 16,
+              xs: 1,
+              sm: 2,
+              md: 3,
+              lg: 4,
+              xl: 5,
+              xxl: 6,
+            }}
+            renderItem={(item) => {
+              console.log(item);
+              return (
+                <List.Item key={item.id}>
+                  <Card hoverable cover={<img alt={item.name} src={item.url} />}>
+                    <Meta
+                      title={item.name}
+                      description={item.creatorName + ' ' + item.uploadTime}
+                      style={{
+                        fontSize: 12,
+                      }}
+                    />
+                  </Card>
+                </List.Item>
+              );
+            }}
           >
             {this.state.loading && this.state.hasMore && (
               <div className="demo-loading-container">
