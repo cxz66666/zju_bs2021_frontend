@@ -1,8 +1,9 @@
 import React from 'react';
 import styles from './index.less';
-import { List, message, Avatar, Spin, notification, Card } from 'antd';
+import { List, message, Avatar, Spin, notification, Card, Popover } from 'antd';
 import { fetchListData } from './service';
 import InfiniteScroll from 'react-infinite-scroller';
+import DetailCard from '../DetailCard';
 const fakeDataUrl = 'https://randomuser.me/api/?results=5&inc=name,gender,email,nat&noinfo';
 const Meta = Card.Meta;
 class InfiniteListExample extends React.Component {
@@ -126,15 +127,22 @@ class InfiniteListExample extends React.Component {
               console.log(item);
               return (
                 <List.Item key={item.id}>
-                  <Card hoverable cover={<img alt={item.name} src={item.url} />}>
-                    <Meta
-                      title={item.name}
-                      description={item.creatorName + ' ' + item.uploadTime}
-                      style={{
-                        fontSize: 12,
-                      }}
-                    />
-                  </Card>
+                  <Popover placement="bottomLeft" content={<DetailCard item={item} />}>
+                    <Card
+                      hoverable
+                      cover={
+                        <img alt={item.name} src={item.url} style={{ objectFit: 'contain' }} />
+                      }
+                    >
+                      <Meta
+                        title={item.name}
+                        description={item.creatorName + ' ' + item.uploadTime}
+                        style={{
+                          fontSize: 12,
+                        }}
+                      />
+                    </Card>
+                  </Popover>
                 </List.Item>
               );
             }}

@@ -359,6 +359,26 @@ export default defineConfig({
       ],
     },
     {
+      name: '项目列表',
+      icon: 'smile',
+      path: '/project',
+      routes: [
+        {
+          name: '创建项目',
+          icon: 'smile',
+          path: '/project/create',
+          component: './project/Create',
+          access: 'canAdmin',
+        },
+        {
+          name: '项目详情页',
+          icon: 'smile',
+          path: '/project/detail/:id',
+          component: './project/DetailPage',
+        },
+      ],
+    },
+    {
       component: '404',
     },
   ],

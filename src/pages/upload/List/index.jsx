@@ -11,24 +11,7 @@ export default () => {
     }, 3000);
   }, []);
   return (
-    <PageContainer
-      title="预览公共区域图片"
-      content={
-        <Row>
-          <Statistic title="Status" value="Pending" />
-          <Statistic
-            title="Price"
-            prefix="$"
-            value={568.08}
-            style={{
-              margin: '0 32px',
-            }}
-          />
-          <Statistic title="Balance" prefix="$" value={3345.08} />
-        </Row>
-      }
-      className={styles.main}
-    >
+    <PageContainer title="预览公共区域图片" className={styles.main}>
       <ListInfiniteLoad />
       <div
         style={{
