@@ -6,7 +6,7 @@ import UploadPictureStyle from './UploadPictureStyle';
 import UploadDrag from './UploadDrag';
 import AlertDescription from './AlertDescription';
 import AlertDescriptionTwo from './AlertDescriptionTwo';
-export default () => {
+export default (props) => {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     setTimeout(() => {
@@ -19,10 +19,10 @@ export default () => {
       className={styles.main}
     >
       <AlertDescription />
-      <UploadPictureStyle />
+      <UploadPictureStyle id={props?.id ? props.id : 0} />
       <AlertDescriptionTwo />
 
-      <UploadDrag />
+      <UploadDrag id={props?.id ? props.id : 0} />
 
       <div
         style={{

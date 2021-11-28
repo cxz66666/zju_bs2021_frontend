@@ -48,6 +48,7 @@ class InfiniteListExample extends React.Component {
 
   fetchData = (callback) => {
     fetchListData(
+      this.props.id,
       { current: this.state.current, pageSize: this.state.pageSize },
       {
         contentType: 'application/json',
@@ -127,7 +128,12 @@ class InfiniteListExample extends React.Component {
               console.log(item);
               return (
                 <List.Item key={item.id}>
-                  <Popover placement="bottomLeft" content={<DetailCard item={item} />}>
+                  <Popover
+                    placement="bottomLeft"
+                    content={
+                      <DetailCard id={this.props.id || 0} pid={this.props.pid || 0} item={item} />
+                    }
+                  >
                     <Card
                       hoverable
                       cover={
@@ -159,10 +165,10 @@ class InfiniteListExample extends React.Component {
   }
 }
 
-export default () => (
+export default (props) => (
   <div className={styles.container}>
     <div id="components-list-demo-infinite-load">
-      <InfiniteListExample />
+      <InfiniteListExample id={props?.id ? props.id : 0} pid={props?.pid ? props.pid : 0} />
     </div>
   </div>
 );

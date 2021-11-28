@@ -76,6 +76,7 @@
     "react-dom": "^17.0.0",
     "react-fittext": "^1.0.0",
     "react-helmet-async": "^1.0.4",
+    "react-image-annotate": "^1.8.0",
     "react-router": "^4.3.1",
     "umi": "^3.5.0",
     "umi-serve": "^1.9.10"

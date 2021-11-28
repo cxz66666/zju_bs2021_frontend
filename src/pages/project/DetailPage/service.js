@@ -17,3 +17,11 @@ export async function ChangeStatus(id, data, options) {
     ...(options || {}),
   });
 }
+
+export async function ChooseNumber(id, params, options) {
+  return request('/api/project/cn/' + id, {
+    params: params,
+    method: 'GET',
+    ...(options || {}),
+  });
+}

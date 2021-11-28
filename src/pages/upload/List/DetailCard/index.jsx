@@ -2,10 +2,11 @@ import React from 'react';
 
 import ProDescriptions from '@ant-design/pro-descriptions';
 import { message } from 'antd';
+import { AddToProject } from './service';
 
 class ProDescription extends React.Component {
   render() {
-    const { item } = this.props;
+    const { item, pid } = this.props;
     return (
       <ProDescriptions
         bordered={true}
@@ -50,15 +51,34 @@ class ProDescription extends React.Component {
           {
             title: '操作',
             valueType: 'option',
-            render: () => [
+            dataIndex: 'id',
+
+            render: (imageId) => [
               <a
-                onClick={() => {
-                  message.warning('暂不支持该操作');
+                onClick={async () => {
+                  if ((pid || 0) > 0 && (this.props.id || 0) === 0) {
+                    try {
+                      let res = await AddToProject({
+                        imageId: imageId,
+                        projectId: pid,
+                      });
+                      if (res.status != 'success') {
+                        message.error(res.msg);
+                      } else {
+                        message.success('添加成功');
+                      }
+                    } catch (error) {
+                      console.log(error);
+                      message.error('添加失败');
+                    }
+                  } else {
+                    message.warning('暂不支持该操作');
+                  }
                 }}
                 rel="noopener noreferrer"
                 key="link"
               >
-                查看
+                {(this.props.pid || 0) > 0 && (this.props.id || 0) === 0 ? '添加到本项目' : '查看'}
               </a>,
               <a
                 onClick={() => {

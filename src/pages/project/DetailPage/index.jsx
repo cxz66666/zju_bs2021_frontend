@@ -20,12 +20,22 @@ import {
   Empty,
   Modal,
   Select,
+  message,
+  notification,
+  InputNumber,
 } from 'antd';
 import { GridContent, PageContainer, RouteContext } from '@ant-design/pro-layout';
 import React, { Fragment, useState } from 'react';
 import classNames from 'classnames';
 import { useRequest } from 'umi';
-import { queryAdvancedProfile, QueryProject } from './service';
+import { queryAdvancedProfile, QueryProject, ChangeStatus, ChooseNumber } from './service';
+import UploadPictureStyle from '../../upload/Upload/UploadPictureStyle';
+import UploadDrag from '../../upload/Upload/UploadDrag';
+import AlertDescription from '../../upload/Upload/AlertDescription';
+import AlertDescriptionTwo from '../../upload/Upload/AlertDescriptionTwo';
+import ListInfiniteLoad from '../../upload/List/ListInfiniteLoad';
+import ReactImageAnnotate from 'react-image-annotate';
+
 import moment from 'moment';
 
 import styles from './style.less';
@@ -38,12 +48,17 @@ const ProjectStatus = {
 };
 const ButtonGroup = Button.Group;
 const mobileMenu = (
-  <Menu>
+  <Menu
+    onClick={(item, key) => {
+      console.log(item, key);
+    }}
+  >
     <Menu.Item key="1">改变状态</Menu.Item>
     <Menu.Item key="2">删除</Menu.Item>
+    <Menu.Item key="3">开始标记</Menu.Item>
   </Menu>
 );
-const action = (
+const action = (dispatch) => (
   <RouteContext.Consumer>
     {({ isMobile }) => {
       if (isMobile) {
@@ -62,10 +77,18 @@ const action = (
       return (
         <Fragment>
           <ButtonGroup>
-            <Button>改变状态</Button>
-            <Button>删除</Button>
+            <Button
+              onClick={(e) => {
+                dispatch(1);
+              }}
+            >
+              改变状态
+            </Button>
+            <Button onClick={(e) => dispatch(2)}>删除</Button>
           </ButtonGroup>
-          <Button type="primary">保留操作</Button>
+          <Button onClick={(e) => dispatch(3)} type="primary">
+            开始标记
+          </Button>
         </Fragment>
       );
     }}
@@ -73,7 +96,7 @@ const action = (
 );
 const extra = (project) => (
   <div className={styles.moreInfo}>
-    <Statistic title="状态" value={ProjectStatus[project.type]} />
+    <Statistic title="状态" value={ProjectStatus[project?.type]} />
   </div>
 );
 const description = (project) => (
@@ -168,112 +191,288 @@ const customDot = (dot, { status }) => {
   return dot;
 };
 
-const operationTabList = [
-  {
-    key: 'tab1',
-    tab: '操作日志一',
-  },
-  {
-    key: 'tab2',
-    tab: '操作日志二',
-  },
-  {
-    key: 'tab3',
-    tab: '操作日志三',
-  },
-];
-const columns = [
-  {
-    title: '操作类型',
-    dataIndex: 'type',
-    key: 'type',
-  },
-  {
-    title: '操作人',
-    dataIndex: 'name',
-    key: 'name',
-  },
-  {
-    title: '执行结果',
-    dataIndex: 'status',
-    key: 'status',
-    render: (text) => {
-      if (text === 'agree') {
-        return <Badge status="success" text="成功" />;
-      }
-
-      return <Badge status="error" text="驳回" />;
-    },
-  },
-  {
-    title: '操作时间',
-    dataIndex: 'updatedAt',
-    key: 'updatedAt',
-  },
-  {
-    title: '备注',
-    dataIndex: 'memo',
-    key: 'memo',
-  },
-];
-
 const DetailPage = (props) => {
   const [tabStatus, seTabStatus] = useState({
-    operationKey: 'tab1',
     tabActiveKey: 'detail',
   });
-
+  const [chooseNumVisible, setChooseNumVisible] = useState(false);
+  const [choosedNumber, setChoosedNumber] = useState(1);
   const [changeStatusVisible, setChangeStatusVisible] = useState(false);
+  const [Images, setImages] = useState([]);
+  const [projectStatus, changeProjectStatus] = useState(1);
   const { data = {}, loading } = useRequest(queryAdvancedProfile);
   const { advancedOperation1, advancedOperation2, advancedOperation3 } = data;
   const {
     data: currentProject,
     run: runProject,
     loading: loadingProject,
-  } = useRequest(() => {
-    return QueryProject(props.match.params.id);
-  });
-  const contentList = {
-    tab1: (
-      <Table
-        pagination={false}
-        loading={loading}
-        dataSource={advancedOperation1}
-        columns={columns}
-      />
-    ),
-    tab2: (
-      <Table
-        pagination={false}
-        loading={loading}
-        dataSource={advancedOperation2}
-        columns={columns}
-      />
-    ),
-    tab3: (
-      <Table
-        pagination={false}
-        loading={loading}
-        dataSource={advancedOperation3}
-        columns={columns}
-      />
-    ),
+  } = useRequest(
+    () => {
+      return QueryProject(props.match.params.id);
+    },
+    {
+      onSuccess: (data, parma) => {
+        if (!data) {
+          message.error({
+            duration: 4,
+            content: '获取项目详情失败，请稍后重试',
+          });
+          return;
+        }
+        //注意修改当前的status状态
+        changeProjectStatus(data.type);
+      },
+      onError: (error, parma) => {
+        message.error({
+          duration: 4,
+          content: '获取项目详情失败，请稍后重试',
+        });
+      },
+    },
+  );
+  const dispatch = (type) => {
+    switch (type) {
+      case 1:
+        setChangeStatusVisible(true);
+        break;
+      case 2:
+        //delete this project
+        message.info({
+          duration: 4,
+          content: '点击删除',
+        });
+        break;
+      case 3:
+        if (currentProject.images.length - currentProject.annotations.length || 0) {
+          setChooseNumVisible(true);
+        } else {
+          message.info('已经全部分配完了哦');
+        }
+        break;
+      default:
+        message.error({
+          duration: 4,
+          content: '未知的类型',
+        });
+    }
   };
 
   const onTabChange = (tabActiveKey) => {
     seTabStatus({ ...tabStatus, tabActiveKey });
   };
 
-  const onOperationTabChange = (key) => {
-    seTabStatus({ ...tabStatus, operationKey: key });
+  const onCsModalOk = async () => {
+    if (loadingProject || !currentProject) {
+      message.error({
+        duration: 4,
+        content: '项目内容获取失败，请刷新重试',
+      });
+      return;
+    }
+    if (currentProject.type == projectStatus) {
+      message.warn({
+        duration: 4,
+        content: '目前状态已经最新，无需更改',
+      });
+      return;
+    }
+    try {
+      let res = await ChangeStatus(currentProject.id, { type: projectStatus });
+      if (res.status == 'success') {
+        notification.success({
+          duration: 4,
+          message: '修改成功',
+          content: '修改成功',
+        });
+      } else {
+        notification.error({
+          duration: 4,
+          message: '项目内容获取失败，请刷新重试',
+          content: res.msg,
+        });
+      }
+      setChangeStatusVisible(false);
+
+      runProject();
+    } catch (error) {
+      notification.error({
+        duration: 4,
+        message: '项目内容获取失败，请刷新重试',
+        content: res.msg,
+      });
+    }
   };
 
+  const onCsModalCancel = () => {
+    setChangeStatusVisible(false);
+  };
+
+  const onSnModalOk = async () => {
+    if (
+      choosedNumber == 0 ||
+      choosedNumber > currentProject.images.length - currentProject.annotations.length
+    ) {
+      message.error('数量错误');
+      return;
+    }
+    try {
+      let ans = await ChooseNumber(currentProject.id, { num: choosedNumber });
+      if (ans.status != 'success') {
+        message.error(ans.msg);
+      } else if (ans.data.number === 0) {
+        message.warning('没有未完成的标注任务了');
+      } else {
+        setImages(
+          ans.data.data.map((r) => {
+            return {
+              ...r,
+              regions: JSON.parse(r.regions ? r.regions : '[]') || [],
+            };
+          }),
+        );
+        onTabChange('work');
+      }
+      setChooseNumVisible(false);
+    } catch (error) {
+      console.log(error);
+      message.error('可能是网络错误');
+      setChooseNumVisible(false);
+    }
+  };
+  const onSnModalCancel = () => {
+    setChooseNumVisible(false);
+  };
+  const detail = (
+    <div className={styles.main}>
+      <GridContent>
+        <Card
+          title="流程进度"
+          style={{
+            marginBottom: 24,
+          }}
+        >
+          <RouteContext.Consumer>
+            {({ isMobile }) => (
+              <Steps
+                direction={isMobile ? 'vertical' : 'horizontal'}
+                progressDot={customDot}
+                current={(currentProject?.type - 1) | 0}
+              >
+                <Step title="已经创建" description={desc1(currentProject)} />
+                <Step title="正在开工" description={desc2(currentProject)} />
+                <Step title="等待审核" />
+                <Step title="已完成" />
+              </Steps>
+            )}
+          </RouteContext.Consumer>
+        </Card>
+        <Card
+          title="参与者信息"
+          style={{
+            marginBottom: 24,
+          }}
+          bordered={false}
+        >
+          <Descriptions
+            style={{
+              marginBottom: 24,
+            }}
+          >
+            <Descriptions.Item label="任务图片总数">
+              {currentProject?.images.length}
+            </Descriptions.Item>
+            <Descriptions.Item label="标注总数">
+              {currentProject?.annotations.length}
+            </Descriptions.Item>
+          </Descriptions>
+          <Card type="inner" title="协作者完成情况">
+            {currentProject?.workers ? (
+              <>
+                {currentProject.workers.map((r) => {
+                  return (
+                    <>
+                      <Descriptions
+                        style={{
+                          marginBottom: 16,
+                        }}
+                        title={r.UserName}
+                      >
+                        <Descriptions.Item label="ID">{r.UserId}</Descriptions.Item>
+                        <Descriptions.Item label="邮箱">{r.UserEmail}</Descriptions.Item>
+                        <Descriptions.Item label="手机号">{r.UserPhone}</Descriptions.Item>
+                        <Descriptions.Item label="提交标记数量">
+                          {currentProject.annotations.reduce(
+                            (a, v) => (v.workerId === r.UserId ? a + 1 : a),
+                            0,
+                          )}
+                        </Descriptions.Item>
+                      </Descriptions>
+                      <Divider
+                        style={{
+                          margin: '16px 0',
+                        }}
+                      />
+                    </>
+                  );
+                })}
+              </>
+            ) : null}
+          </Card>
+        </Card>
+        <Card
+          title="用户近半年来电记录"
+          style={{
+            marginBottom: 24,
+          }}
+          bordered={false}
+        >
+          <Empty />
+        </Card>
+      </GridContent>
+    </div>
+  );
+  const image = <ListInfiniteLoad id={currentProject?.id ? currentProject.id : 0} />;
+  const upload = (
+    <div className={styles.main}>
+      <GridContent>
+        <AlertDescription />
+        <UploadPictureStyle id={currentProject?.id ? currentProject.id : 0} />
+        <AlertDescriptionTwo />
+        <UploadDrag id={currentProject?.id ? currentProject.id : 0} />
+      </GridContent>
+    </div>
+  );
+
+  const work = (
+    <div className={styles.main}>
+      <ReactImageAnnotate
+        labelImages
+        taskDescription={currentProject?.description || '缺少简述'}
+        regionClsList={currentProject?.class?.tags.map((r) => r.content) || []}
+        regionTagList={[]}
+        images={Images}
+        onExit={(e) => {
+          console.log(e);
+        }}
+        hideSettings
+        hideClone
+      />
+    </div>
+  );
+  const publicImage = <ListInfiniteLoad id={0} pid={currentProject?.id ? currentProject.id : 0} />;
+  const content = {
+    image: image,
+    detail: detail,
+    upload: upload,
+    publicImage: publicImage,
+    work: work,
+  };
   return (
     <>
       {loadingProject ? null : (
         <PageContainer
           title={'项目名称：' + currentProject?.name}
-          extra={action}
+          extra={action(dispatch)}
           className={styles.pageHeader}
           content={description(currentProject)}
           extraContent={extra(currentProject)}
@@ -288,164 +487,32 @@ const DetailPage = (props) => {
               key: 'image',
               tab: '图片',
             },
+            {
+              key: 'upload',
+              tab: '上传图片',
+              disabled: currentProject?.type === 1 ? false : true,
+            },
+            {
+              key: 'publicImage',
+              tab: '公共图片区',
+              disabled: currentProject?.type === 1 ? false : true,
+            },
           ]}
         >
-          <div className={styles.main}>
-            <GridContent>
-              <Card
-                title="流程进度"
-                style={{
-                  marginBottom: 24,
-                }}
-              >
-                <RouteContext.Consumer>
-                  {({ isMobile }) => (
-                    <Steps
-                      direction={isMobile ? 'vertical' : 'horizontal'}
-                      progressDot={customDot}
-                      current={(currentProject?.type - 1) | 0}
-                    >
-                      <Step title="已经创建" description={desc1(currentProject)} />
-                      <Step title="正在开工" description={desc2(currentProject)} />
-                      <Step title="等待审核" />
-                      <Step title="已完成" />
-                    </Steps>
-                  )}
-                </RouteContext.Consumer>
-              </Card>
-              <Card
-                title="用户信息"
-                style={{
-                  marginBottom: 24,
-                }}
-                bordered={false}
-              >
-                <Descriptions
-                  style={{
-                    marginBottom: 24,
-                  }}
-                >
-                  <Descriptions.Item label="用户姓名">付小小</Descriptions.Item>
-                  <Descriptions.Item label="会员卡号">32943898021309809423</Descriptions.Item>
-                  <Descriptions.Item label="身份证">3321944288191034921</Descriptions.Item>
-                  <Descriptions.Item label="联系方式">18112345678</Descriptions.Item>
-                  <Descriptions.Item label="联系地址">
-                    曲丽丽 18100000000 浙江省杭州市西湖区黄姑山路工专路交叉路口
-                  </Descriptions.Item>
-                </Descriptions>
-                <Descriptions
-                  style={{
-                    marginBottom: 24,
-                  }}
-                  title="信息组"
-                >
-                  <Descriptions.Item label="某某数据">725</Descriptions.Item>
-                  <Descriptions.Item label="该数据更新时间">2017-08-08</Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span>
-                        某某数据
-                        <Tooltip title="数据说明">
-                          <InfoCircleOutlined
-                            style={{
-                              color: 'rgba(0, 0, 0, 0.43)',
-                              marginLeft: 4,
-                            }}
-                          />
-                        </Tooltip>
-                      </span>
-                    }
-                  >
-                    725
-                  </Descriptions.Item>
-                  <Descriptions.Item label="该数据更新时间">2017-08-08</Descriptions.Item>
-                </Descriptions>
-                <h4
-                  style={{
-                    marginBottom: 16,
-                  }}
-                >
-                  信息组
-                </h4>
-                <Card type="inner" title="多层级信息组">
-                  <Descriptions
-                    style={{
-                      marginBottom: 16,
-                    }}
-                    title="组名称"
-                  >
-                    <Descriptions.Item label="负责人">林东东</Descriptions.Item>
-                    <Descriptions.Item label="角色码">1234567</Descriptions.Item>
-                    <Descriptions.Item label="所属部门">XX公司 - YY部</Descriptions.Item>
-                    <Descriptions.Item label="过期时间">2017-08-08</Descriptions.Item>
-                    <Descriptions.Item label="描述">
-                      这段描述很长很长很长很长很长很长很长很长很长很长很长很长很长很长...
-                    </Descriptions.Item>
-                  </Descriptions>
-                  <Divider
-                    style={{
-                      margin: '16px 0',
-                    }}
-                  />
-                  <Descriptions
-                    style={{
-                      marginBottom: 16,
-                    }}
-                    title="组名称"
-                    column={1}
-                  >
-                    <Descriptions.Item label="学名">
-                      Citrullus lanatus (Thunb.) Matsum. et
-                      Nakai一年生蔓生藤本；茎、枝粗壮，具明显的棱。卷须较粗..
-                    </Descriptions.Item>
-                  </Descriptions>
-                  <Divider
-                    style={{
-                      margin: '16px 0',
-                    }}
-                  />
-                  <Descriptions title="组名称">
-                    <Descriptions.Item label="负责人">付小小</Descriptions.Item>
-                    <Descriptions.Item label="角色码">1234568</Descriptions.Item>
-                  </Descriptions>
-                </Card>
-              </Card>
-              <Card
-                title="用户近半年来电记录"
-                style={{
-                  marginBottom: 24,
-                }}
-                bordered={false}
-              >
-                <Empty />
-              </Card>
-              <Card
-                className={styles.tabsCard}
-                bordered={false}
-                tabList={operationTabList}
-                onTabChange={onOperationTabChange}
-              >
-                {contentList[tabStatus.operationKey]}
-              </Card>
-            </GridContent>
-          </div>
+          {content[tabStatus.tabActiveKey]}
         </PageContainer>
       )}
 
-      {loadingProject && changeStatusVisible && (
+      {!loadingProject && changeStatusVisible && (
         <Modal
           title="改变状态"
           visible={changeStatusVisible}
-          onOk={this.onCsModalOk}
-          onCancel={this.onCsModalCancel}
+          onOk={onCsModalOk}
+          onCancel={onCsModalCancel}
         >
           <Select
-            defaultValue={
-              this.state.changeState.status === -1
-                ? this.props.fixupDetails.status
-                : this.state.changeState.status
-            }
-            onChange={this.onCsModalSelectChange}
+            value={projectStatus}
+            onChange={(e) => changeProjectStatus(e)}
             style={{ width: 150 }}
           >
             <Select.Option value={1}>已经创建</Select.Option>
@@ -453,6 +520,22 @@ const DetailPage = (props) => {
             <Select.Option value={3}>等待审核</Select.Option>
             <Select.Option value={4}>已完成</Select.Option>
           </Select>
+        </Modal>
+      )}
+      {!loadingProject && chooseNumVisible && (
+        <Modal
+          title="选择此次的数量"
+          visible={chooseNumVisible}
+          onOk={onSnModalOk}
+          onCancel={onSnModalCancel}
+        >
+          <div>范围:1~{currentProject.images.length - currentProject.annotations.length || 0}</div>
+          <InputNumber
+            min={1}
+            max={currentProject.images.length - currentProject.annotations.length || 0}
+            value={choosedNumber}
+            onChange={setChoosedNumber}
+          />
         </Modal>
       )}
     </>
