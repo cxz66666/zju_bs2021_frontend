@@ -25,3 +25,19 @@ export async function ChooseNumber(id, params, options) {
     ...(options || {}),
   });
 }
+
+export async function ChangeRegion(data, options) {
+  return request('/api/project/cr', {
+    data: data,
+    method: 'POST',
+    ...(options || {}),
+  });
+}
+
+export async function ChangeAnnotationType(data, options) {
+  return request('/api/project/ct', {
+    data: data,
+    method: 'POST',
+    ...(options || {}),
+  });
+}

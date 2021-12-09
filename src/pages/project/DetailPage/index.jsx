@@ -23,12 +23,20 @@ import {
   message,
   notification,
   InputNumber,
+  Progress,
 } from 'antd';
 import { GridContent, PageContainer, RouteContext } from '@ant-design/pro-layout';
 import React, { Fragment, useState } from 'react';
 import classNames from 'classnames';
 import { useRequest } from 'umi';
-import { queryAdvancedProfile, QueryProject, ChangeStatus, ChooseNumber } from './service';
+import {
+  queryAdvancedProfile,
+  QueryProject,
+  ChangeStatus,
+  ChooseNumber,
+  ChangeRegion,
+  ChangeAnnotationType,
+} from './service';
 import UploadPictureStyle from '../../upload/Upload/UploadPictureStyle';
 import UploadDrag from '../../upload/Upload/UploadDrag';
 import AlertDescription from '../../upload/Upload/AlertDescription';
@@ -202,6 +210,10 @@ const DetailPage = (props) => {
   const [projectStatus, changeProjectStatus] = useState(1);
   const { data = {}, loading } = useRequest(queryAdvancedProfile);
   const { advancedOperation1, advancedOperation2, advancedOperation3 } = data;
+  const [selectedImage, setSelectedImage] = useState(0);
+
+  //是否提交的时候保存
+  const [uploadOnSave, setUploadOnSave] = useState(false);
   const {
     data: currentProject,
     run: runProject,
@@ -330,6 +342,7 @@ const DetailPage = (props) => {
             };
           }),
         );
+        setUploadOnSave(true);
         onTabChange('work');
       }
       setChooseNumVisible(false);
@@ -442,24 +455,76 @@ const DetailPage = (props) => {
       </GridContent>
     </div>
   );
-
+  const handleNext = () => {
+    if (selectedImage === Images.length - 1) return;
+    setSelectedImage(selectedImage + 1);
+  };
+  const handlePrev = () => {
+    if (selectedImage === 0) return;
+    setSelectedImage(selectedImage - 1);
+  };
   const work = (
     <div className={styles.main}>
+      <div>
+        共计：{Images.length || 0}, 当前:{selectedImage + 1}，进度:
+        <Progress percent={(100 * (selectedImage + 1)) / Images.length} />
+      </div>
       <ReactImageAnnotate
         labelImages
+        hideClone
+        hideSettings
+        selectedImage={selectedImage}
+        onNextImage={handleNext}
+        onPrevImage={handlePrev}
         taskDescription={currentProject?.description || '缺少简述'}
         regionClsList={currentProject?.class?.tags.map((r) => r.content) || []}
         regionTagList={[]}
         images={Images}
-        onExit={(e) => {
+        onExit={async (e) => {
+          if (!uploadOnSave) {
+            message.info('该页面保存操作无效！');
+            return;
+          }
           console.log(e);
+          let data = e.images.map((r) => {
+            return {
+              id: r.id,
+              regions: JSON.stringify(r.regions),
+            };
+          });
+          try {
+            //保存当前的region，注意需要将uploadOnSave设置为true时候才可以进行修改
+            let ans = await ChangeRegion({ data: data });
+            if (ans.status != 'success') {
+              notification.error({
+                duration: 4,
+                description: ans.msg,
+                message: '保存失败',
+              });
+            } else {
+              notification.success({
+                duration: 4,
+                message: '保存成功',
+              });
+            }
+          } catch (error) {
+            notification.error({
+              duration: 4,
+              description: error,
+              message: '保存失败',
+            });
+          }
         }}
-        hideSettings
-        hideClone
       />
     </div>
   );
-  const publicImage = <ListInfiniteLoad id={0} pid={currentProject?.id ? currentProject.id : 0} />;
+  const publicImage = (
+    <ListInfiniteLoad
+      id={0}
+      pid={currentProject?.id ? currentProject.id : 0}
+      map={currentProject?.annotationMap ? currentProject.annotationMap : {}}
+    />
+  );
   const content = {
     image: image,
     detail: detail,
@@ -467,6 +532,7 @@ const DetailPage = (props) => {
     publicImage: publicImage,
     work: work,
   };
+
   return (
     <>
       {loadingProject ? null : (

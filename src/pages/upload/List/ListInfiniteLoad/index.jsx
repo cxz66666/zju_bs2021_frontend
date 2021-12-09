@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './index.less';
-import { List, message, Avatar, Spin, notification, Card, Popover } from 'antd';
+import { List, message, Avatar, Spin, notification, Card, Popover, Tag } from 'antd';
 import { fetchListData } from './service';
 import InfiniteScroll from 'react-infinite-scroller';
 import DetailCard from '../DetailCard';
@@ -103,8 +103,25 @@ class InfiniteListExample extends React.Component {
       });
     }
   };
-
+  annotationType = (annotation) => {
+    if (!annotation) {
+      return <Tag color="red">暂未标记</Tag>;
+    }
+    switch (annotation.type) {
+      case 0:
+        return <Tag color="green">已经标记</Tag>;
+      case 1:
+        return <Tag color="blue">未使用</Tag>;
+      case 2:
+        return <Tag color="purple">已经审核</Tag>;
+      case 3:
+        return <Tag color="gold">已接受</Tag>;
+      default:
+        return <Tag color="blue">未使用</Tag>;
+    }
+  };
   render() {
+    // console.log(this.props.map);
     return (
       <div className="demo-infinite-container">
         <InfiniteScroll
@@ -125,13 +142,20 @@ class InfiniteListExample extends React.Component {
               xxl: 6,
             }}
             renderItem={(item) => {
-              console.log(item);
+              // console.log(item);
               return (
                 <List.Item key={item.id}>
                   <Popover
                     placement="bottomLeft"
                     content={
-                      <DetailCard id={this.props.id || 0} pid={this.props.pid || 0} item={item} />
+                      <DetailCard
+                        id={this.props.id || 0}
+                        pid={this.props.pid || 0}
+                        item={item}
+                        annotation={
+                          this.props.map[item.id] != undefined ? this.props.map[item.id] : {}
+                        }
+                      />
                     }
                   >
                     <Card
@@ -142,7 +166,12 @@ class InfiniteListExample extends React.Component {
                     >
                       <Meta
                         title={item.name}
-                        description={item.creatorName + ' ' + item.uploadTime}
+                        description={
+                          <div>
+                            {item.creatorName + ' ' + item.uploadTime + ' '}
+                            {this.annotationType(this.props.map[item.id])}
+                          </div>
+                        }
                         style={{
                           fontSize: 12,
                         }}
@@ -168,7 +197,11 @@ class InfiniteListExample extends React.Component {
 export default (props) => (
   <div className={styles.container}>
     <div id="components-list-demo-infinite-load">
-      <InfiniteListExample id={props?.id ? props.id : 0} pid={props?.pid ? props.pid : 0} />
+      <InfiniteListExample
+        id={props?.id ? props.id : 0}
+        pid={props?.pid ? props.pid : 0}
+        map={props?.map ? props.map : {}}
+      />
     </div>
   </div>
 );
