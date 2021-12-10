@@ -71,6 +71,8 @@ class ProDescription extends React.Component {
                       console.log(error);
                       message.error('添加失败');
                     }
+                  } else if (this.props.annotation) {
+                    this.props.onClickView(this.props.annotation);
                   } else {
                     message.warning('暂不支持该操作');
                   }

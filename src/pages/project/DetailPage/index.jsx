@@ -28,7 +28,7 @@ import {
 import { GridContent, PageContainer, RouteContext } from '@ant-design/pro-layout';
 import React, { Fragment, useState } from 'react';
 import classNames from 'classnames';
-import { useRequest } from 'umi';
+import { useRequest, useAccess, Access } from 'umi';
 import {
   queryAdvancedProfile,
   QueryProject,
@@ -45,7 +45,6 @@ import ListInfiniteLoad from '../../upload/List/ListInfiniteLoad';
 import ReactImageAnnotate from 'react-image-annotate';
 
 import moment from 'moment';
-
 import styles from './style.less';
 const { Step } = Steps;
 const ProjectStatus = {
@@ -214,6 +213,7 @@ const DetailPage = (props) => {
 
   //是否提交的时候保存
   const [uploadOnSave, setUploadOnSave] = useState(false);
+  const access = useAccess();
   const {
     data: currentProject,
     run: runProject,
@@ -245,6 +245,10 @@ const DetailPage = (props) => {
   const dispatch = (type) => {
     switch (type) {
       case 1:
+        if (!access.canAdmin) {
+          message.error('您没有相应的权限');
+          return;
+        }
         setChangeStatusVisible(true);
         break;
       case 2:
@@ -334,6 +338,7 @@ const DetailPage = (props) => {
       } else if (ans.data.number === 0) {
         message.warning('没有未完成的标注任务了');
       } else {
+        setSelectedImage(0);
         setImages(
           ans.data.data.map((r) => {
             return {
@@ -432,19 +437,30 @@ const DetailPage = (props) => {
             ) : null}
           </Card>
         </Card>
-        <Card
-          title="用户近半年来电记录"
-          style={{
-            marginBottom: 24,
-          }}
-          bordered={false}
-        >
-          <Empty />
-        </Card>
       </GridContent>
     </div>
   );
-  const image = <ListInfiniteLoad id={currentProject?.id ? currentProject.id : 0} />;
+  //查看某一个标注的内容，注意是只有一个，传进去的参数为一个annotation对象
+  const onClickViewAnnotation = (annotation) => {
+    setSelectedImage(0);
+    setImages(
+      [annotation].map((r) => {
+        return {
+          ...r,
+          regions: JSON.parse(r.regions ? r.regions : '[]') || [],
+        };
+      }),
+    );
+    setUploadOnSave(true);
+    onTabChange('work');
+  };
+  const image = (
+    <ListInfiniteLoad
+      id={currentProject?.id ? currentProject.id : 0}
+      map={currentProject?.annotationMap ? currentProject.annotationMap : {}}
+      onClickView={onClickViewAnnotation}
+    />
+  );
   const upload = (
     <div className={styles.main}>
       <GridContent>
@@ -463,6 +479,7 @@ const DetailPage = (props) => {
     if (selectedImage === 0) return;
     setSelectedImage(selectedImage - 1);
   };
+
   const work = (
     <div className={styles.main}>
       <div>
@@ -514,17 +531,13 @@ const DetailPage = (props) => {
               message: '保存失败',
             });
           }
+          runProject();
+          onTabChange('image');
         }}
       />
     </div>
   );
-  const publicImage = (
-    <ListInfiniteLoad
-      id={0}
-      pid={currentProject?.id ? currentProject.id : 0}
-      map={currentProject?.annotationMap ? currentProject.annotationMap : {}}
-    />
-  );
+  const publicImage = <ListInfiniteLoad id={0} pid={currentProject?.id ? currentProject.id : 0} />;
   const content = {
     image: image,
     detail: detail,

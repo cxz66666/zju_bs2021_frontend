@@ -359,7 +359,7 @@ export default defineConfig({
       ],
     },
     {
-      name: '项目列表',
+      name: '项目总览',
       icon: 'smile',
       path: '/project',
       routes: [
@@ -374,7 +374,14 @@ export default defineConfig({
           name: '项目详情页',
           icon: 'smile',
           path: '/project/detail/:id',
+          hideInMenu: true,
           component: './project/DetailPage',
+        },
+        {
+          name: '项目列表',
+          icon: 'smile',
+          path: '/project/list',
+          component: './project/ListCardList',
         },
       ],
     },

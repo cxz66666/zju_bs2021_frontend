@@ -152,8 +152,11 @@ class InfiniteListExample extends React.Component {
                         id={this.props.id || 0}
                         pid={this.props.pid || 0}
                         item={item}
+                        onClickView={this.props.onClickView}
                         annotation={
-                          this.props.map[item.id] != undefined ? this.props.map[item.id] : {}
+                          this.props.map && this.props.map[item.id] != undefined
+                            ? this.props.map[item.id]
+                            : undefined
                         }
                       />
                     }
@@ -169,7 +172,7 @@ class InfiniteListExample extends React.Component {
                         description={
                           <div>
                             {item.creatorName + ' ' + item.uploadTime + ' '}
-                            {this.annotationType(this.props.map[item.id])}
+                            {this.props.map && this.annotationType(this.props.map[item.id])}
                           </div>
                         }
                         style={{
@@ -200,7 +203,8 @@ export default (props) => (
       <InfiniteListExample
         id={props?.id ? props.id : 0}
         pid={props?.pid ? props.pid : 0}
-        map={props?.map ? props.map : {}}
+        map={props?.map ? props.map : undefined}
+        onClickView={props.onClickView}
       />
     </div>
   </div>
