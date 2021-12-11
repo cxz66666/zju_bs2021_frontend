@@ -20,16 +20,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import { useRequest } from 'umi';
 import moment from 'moment';
 import OperationModal from './components/OperationModal';
-import {
-  addFakeList,
-  queryFakeList,
-  removeFakeList,
-  updateFakeList,
-  ListUser,
-  DeleteUser,
-  ChangeRole,
-  QueryNum,
-} from './service';
+import { Register, ListUser, DeleteUser, ChangeRole, QueryNum } from './service';
 import styles from './style.less';
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
@@ -67,25 +58,7 @@ export const UserList = () => {
   } = useRequest(() => {
     return ListUser();
   });
-  const { run: postRun } = useRequest(
-    (method, params) => {
-      if (method === 'remove') {
-        return removeFakeList(params);
-      }
 
-      if (method === 'update') {
-        return updateFakeList(params);
-      }
-
-      return addFakeList(params);
-    },
-    {
-      manual: true,
-      onSuccess: (result) => {
-        mutate(result);
-      },
-    },
-  );
   const list = listData?.data || [];
   const paginationProps = {
     showSizeChanger: true,
@@ -199,10 +172,33 @@ export const UserList = () => {
     setCurrent({});
   };
 
-  const handleSubmit = (values) => {
-    setDone(true);
-    const method = values?.id ? 'update' : 'add';
-    postRun(method, values);
+  const handleSubmit = async (values) => {
+    //注意这里要取消cookie，否则register会带着cookie返回
+    values.noCookie = true;
+    try {
+      let res = await Register(values);
+      if (res.status != 'success') {
+        notification.error({
+          duration: 4,
+          message: '增加失败',
+          description: msg.msg,
+        });
+      } else {
+        notification.success({
+          duration: 4,
+          message: '增加成功',
+        });
+        setDone(true);
+        refreshList();
+      }
+    } catch (error) {
+      console.log(error);
+      notification.error({
+        duration: 4,
+        message: '增加失败',
+        description: msg.msg,
+      });
+    }
   };
 
   return (

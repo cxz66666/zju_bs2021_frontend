@@ -1,26 +1,48 @@
 import React from 'react';
 import styles from './index.less';
-import { Upload, message } from 'antd';
+import { Upload, message, notification } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 const { Dragger } = Upload;
 
 export default (props) => {
   const props2 = {
-    name: 'file',
-    multiple: true,
-    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-
+    name: 'videos',
+    multiple: false,
+    action: '/api/upload/video',
+    accept: '.mp4',
+    data: {
+      id: props?.id || 0,
+    },
     onChange(info) {
       const { status } = info.file;
-
       if (status !== 'uploading') {
         console.log(info.file, info.fileList);
       }
 
       if (status === 'done') {
-        message.success(`${info.file.name} file uploaded successfully.`);
+        if (info.file.response.status != 'success') {
+          notification.error({
+            duration: 5,
+            message: '上传失败',
+            description: info.file.response.msg,
+          });
+        } else {
+          notification.success({
+            duration: 5,
+            message: '上传成功',
+            description: `${info.file.name} 总共生成 ${info.file.response.data} 张图片`,
+          });
+        }
       } else if (status === 'error') {
-        message.error(`${info.file.name} file upload failed.`);
+        notification.error({
+          duration: 4,
+          message: '上传失败',
+          description: '未知原因',
+        });
+      }
+
+      if (props.refresh && info.fileList.every((r) => r.status == 'done')) {
+        props.refresh();
       }
     },
   };

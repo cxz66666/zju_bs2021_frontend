@@ -3,6 +3,9 @@ import {
   DownOutlined,
   EllipsisOutlined,
   InfoCircleOutlined,
+  ExclamationCircleOutlined,
+  SyncOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import {
   Badge,
@@ -16,6 +19,7 @@ import {
   Popover,
   Steps,
   Table,
+  Tag,
   Tooltip,
   Empty,
   Modal,
@@ -28,7 +32,7 @@ import {
 import { GridContent, PageContainer, RouteContext } from '@ant-design/pro-layout';
 import React, { Fragment, useState } from 'react';
 import classNames from 'classnames';
-import { useRequest, useAccess, Access } from 'umi';
+import { useRequest, useAccess, Access, history } from 'umi';
 import {
   queryAdvancedProfile,
   QueryProject,
@@ -36,6 +40,7 @@ import {
   ChooseNumber,
   ChangeRegion,
   ChangeAnnotationType,
+  DeleteProject,
 } from './service';
 import UploadPictureStyle from '../../upload/Upload/UploadPictureStyle';
 import UploadDrag from '../../upload/Upload/UploadDrag';
@@ -54,15 +59,21 @@ const ProjectStatus = {
   4: '已完工',
 };
 const ButtonGroup = Button.Group;
-const mobileMenu = (
+const mobileMenu = (dispatch) => (
   <Menu
-    onClick={(item, key) => {
-      console.log(item, key);
+    onClick={(item) => {
+      console.log(item);
+      dispatch(parseInt(item.key));
     }}
   >
+    <Menu.Item key="4">
+      <SyncOutlined spin />
+      刷新
+    </Menu.Item>
     <Menu.Item key="1">改变状态</Menu.Item>
     <Menu.Item key="2">删除</Menu.Item>
     <Menu.Item key="3">开始标记</Menu.Item>
+    <Menu.Item key="5">审核</Menu.Item>
   </Menu>
 );
 const action = (dispatch) => (
@@ -73,7 +84,7 @@ const action = (dispatch) => (
           <Dropdown.Button
             type="primary"
             icon={<DownOutlined />}
-            overlay={mobileMenu}
+            overlay={mobileMenu(dispatch)}
             placement="bottomRight"
           >
             选择操作
@@ -85,6 +96,14 @@ const action = (dispatch) => (
         <Fragment>
           <ButtonGroup>
             <Button
+              icon={<SyncOutlined spin />}
+              onClick={(e) => {
+                dispatch(4);
+              }}
+            >
+              刷新
+            </Button>
+            <Button
               onClick={(e) => {
                 dispatch(1);
               }}
@@ -92,6 +111,7 @@ const action = (dispatch) => (
               改变状态
             </Button>
             <Button onClick={(e) => dispatch(2)}>删除</Button>
+            <Button onClick={(e) => dispatch(5)}>审核</Button>
           </ButtonGroup>
           <Button onClick={(e) => dispatch(3)} type="primary">
             开始标记
@@ -119,6 +139,16 @@ const description = (project) => (
 
         <Descriptions.Item label="参与者数">{project?.workers.length}</Descriptions.Item>
         <Descriptions.Item label="标注数">{project?.annotations.length}</Descriptions.Item>
+        <Descriptions.Item label="图片数量">{project?.images.length}</Descriptions.Item>
+        <Descriptions.Item label="标签">
+          <>
+            {project?.class.tags.map((r) => (
+              <Tag color={'blue'} key={r.id}>
+                {r.content}
+              </Tag>
+            ))}
+          </>
+        </Descriptions.Item>
       </Descriptions>
     )}
   </RouteContext.Consumer>
@@ -213,6 +243,7 @@ const DetailPage = (props) => {
 
   //是否提交的时候保存
   const [uploadOnSave, setUploadOnSave] = useState(false);
+  const [reviewOnWork, setReviewOnWork] = useState(false);
   const access = useAccess();
   const {
     data: currentProject,
@@ -252,18 +283,52 @@ const DetailPage = (props) => {
         setChangeStatusVisible(true);
         break;
       case 2:
+        if (!access.canAdmin) {
+          message.error('您没有相应的权限');
+          return;
+        }
         //delete this project
-        message.info({
-          duration: 4,
-          content: '点击删除',
-        });
+        confirmDelete();
         break;
       case 3:
         if (currentProject.images.length - currentProject.annotations.length || 0) {
           setChooseNumVisible(true);
         } else {
-          message.info('已经全部分配完了哦');
+          message.info('任务已经全部分配完了哦');
         }
+        break;
+
+      case 4:
+        message.info('刷新ing');
+        runProject();
+        break;
+      case 5:
+        if (!access.canAdmin) {
+          message.error('您没有相应的权限');
+          return;
+        }
+        if (currentProject.images.length != currentProject.annotations.length) {
+          message.error('存在未标注完的任务，请标注完后再进行审核');
+          return;
+        }
+        if (currentProject.type != 3) {
+          message.error('当前项目状态不为等待审核，请先修改项目状态后再开始');
+          return;
+        }
+        setSelectedImage(0);
+        setImages(
+          currentProject.annotations
+            .filter((r) => r.type === 0)
+            .map((r) => {
+              return {
+                ...r,
+                regions: JSON.parse(r.regions ? r.regions : '[]') || [],
+              };
+            }),
+        );
+        setUploadOnSave(false);
+        setReviewOnWork(true);
+        onTabChange('work');
         break;
       default:
         message.error({
@@ -272,7 +337,42 @@ const DetailPage = (props) => {
         });
     }
   };
+  const confirmDelete = () => {
+    Modal.confirm({
+      title: '确认删除',
+      icon: <ExclamationCircleOutlined />,
+      content: '您确认要删除该任务吗，该操作不可逆',
+      okText: '确认',
+      cancelText: '取消',
+      onOk: async (e) => {
+        try {
+          let res = await DeleteProject(props.match.params.id);
+          console.log(res);
 
+          if (res.status != 'success') {
+            notification.error({
+              duration: 4,
+              message: '删除失败',
+              description: res.msg,
+            });
+          } else {
+            notification.success({
+              duration: 4,
+              message: '删除成功',
+            });
+            history.push(`/project/list`);
+            return;
+          }
+        } catch (error) {
+          notification.error({
+            duration: 4,
+            message: '删除失败',
+            description: error,
+          });
+        }
+      },
+    });
+  };
   const onTabChange = (tabActiveKey) => {
     seTabStatus({ ...tabStatus, tabActiveKey });
   };
@@ -347,6 +447,7 @@ const DetailPage = (props) => {
             };
           }),
         );
+        setReviewOnWork(false);
         setUploadOnSave(true);
         onTabChange('work');
       }
@@ -359,6 +460,9 @@ const DetailPage = (props) => {
   };
   const onSnModalCancel = () => {
     setChooseNumVisible(false);
+  };
+  const sleep = (time) => {
+    return new Promise((resolve) => setTimeout(resolve, time));
   };
   const detail = (
     <div className={styles.main}>
@@ -451,6 +555,11 @@ const DetailPage = (props) => {
         };
       }),
     );
+    if (access.canAdmin && annotation.type === 0) {
+      setReviewOnWork(true);
+    } else {
+      setReviewOnWork(false);
+    }
     setUploadOnSave(true);
     onTabChange('work');
   };
@@ -465,14 +574,29 @@ const DetailPage = (props) => {
     <div className={styles.main}>
       <GridContent>
         <AlertDescription />
-        <UploadPictureStyle id={currentProject?.id ? currentProject.id : 0} />
+        <UploadPictureStyle
+          id={currentProject?.id ? currentProject.id : 0}
+          refresh={async (e) => {
+            // await sleep(1000);
+            // runProject();
+          }}
+        />
         <AlertDescriptionTwo />
-        <UploadDrag id={currentProject?.id ? currentProject.id : 0} />
+        <UploadDrag
+          id={currentProject?.id ? currentProject.id : 0}
+          refresh={async (e) => {
+            // await sleep(1000);
+            // runProject();
+          }}
+        />
       </GridContent>
     </div>
   );
   const handleNext = () => {
-    if (selectedImage === Images.length - 1) return;
+    if (selectedImage === Images.length - 1) {
+      message.info('已经是最后一个了');
+      return;
+    }
     setSelectedImage(selectedImage + 1);
   };
   const handlePrev = () => {
@@ -484,6 +608,28 @@ const DetailPage = (props) => {
     <div className={styles.main}>
       <div>
         共计：{Images.length || 0}, 当前:{selectedImage + 1}，进度:
+        {reviewOnWork ? (
+          <Button
+            size="large"
+            style={{ float: 'right' }}
+            shape="round"
+            icon={<DownloadOutlined />}
+            type="primary"
+            onClick={async (e) => {
+              let res = await ChangeAnnotationType({ ids: [Images[selectedImage].id], type: 3 });
+              if (res.status != 'success') {
+                message.error(res.msg);
+              } else {
+                message.success('修改成功');
+                handleNext();
+              }
+            }}
+          >
+            通过
+          </Button>
+        ) : null}
+      </div>
+      <div>
         <Progress percent={(100 * (selectedImage + 1)) / Images.length} />
       </div>
       <ReactImageAnnotate

@@ -41,3 +41,10 @@ export async function ChangeAnnotationType(data, options) {
     ...(options || {}),
   });
 }
+
+export async function DeleteProject(id, options) {
+  return request('/api/project/' + id, {
+    method: 'DELETE',
+    ...(options || {}),
+  });
+}

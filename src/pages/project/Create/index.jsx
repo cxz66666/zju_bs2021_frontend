@@ -104,9 +104,9 @@ const Create = () => {
       }
 
       //submit success
-      message.success('提交成功');
+      message.success('提交成功,跳转中');
       //TODO
-      // history.push("/xx/xxx/xx" + res.data.id);
+      history.push('/project/detail/' + res.data.id);
     } catch (error) {
       notification.error({
         duration: 4,

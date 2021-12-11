@@ -1,27 +1,4 @@
 import { request } from 'umi';
-export async function queryFakeList(params) {
-  return request('/api/get_list', {
-    params,
-  });
-}
-export async function removeFakeList(params) {
-  return request('/api/post_fake_list', {
-    method: 'POST',
-    data: { ...params, method: 'delete' },
-  });
-}
-export async function addFakeList(params) {
-  return request('/api/post_fake_list', {
-    method: 'POST',
-    data: { ...params, method: 'post' },
-  });
-}
-export async function updateFakeList(params) {
-  return request('/api/post_fake_list', {
-    method: 'POST',
-    data: { ...params, method: 'update' },
-  });
-}
 
 export async function ListUser(params) {
   return request('/api/users/list', {
@@ -50,5 +27,12 @@ export async function ChangeRole(params) {
 export async function QueryNum() {
   return request('/api/users/num', {
     method: 'GET',
+  });
+}
+
+export async function Register(data) {
+  return request('/api/user/register', {
+    method: 'POST',
+    data: data,
   });
 }

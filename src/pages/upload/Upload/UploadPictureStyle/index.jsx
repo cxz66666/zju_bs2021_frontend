@@ -32,6 +32,16 @@ export default (props) => {
       const imgWindow = window.open(src);
       imgWindow.document.write(image.outerHTML);
     },
+    onChange(info) {
+      const { status } = info.file;
+      if (status !== 'uploading') {
+        console.log(info.file, info.fileList);
+      }
+
+      if (props.refresh && info.fileList.every((r) => r.status == 'done')) {
+        props.refresh();
+      }
+    },
   };
   return (
     <div className={styles.container}>

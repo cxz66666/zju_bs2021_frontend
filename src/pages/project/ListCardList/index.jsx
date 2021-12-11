@@ -1,5 +1,5 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Card, List, Typography, Row, Col, message } from 'antd';
+import { Button, Card, List, Typography, Row, Col, message, Tag } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import { useRequest, useAccess, Access, history } from 'umi';
 import { queryList } from './service';
@@ -13,6 +13,24 @@ const ListCardList = () => {
       current: 0,
     });
   });
+
+  const ProjectType = (type) => {
+    if (!type) {
+      return <Tag color="red">未知类型</Tag>;
+    }
+    switch (type) {
+      case 1:
+        return <Tag color="green">已经创建</Tag>;
+      case 2:
+        return <Tag color="blue">正在开工</Tag>;
+      case 3:
+        return <Tag color="purple">等待审核</Tag>;
+      case 4:
+        return <Tag color="gold">已完工</Tag>;
+      default:
+        return <Tag color="blue">未使用</Tag>;
+    }
+  };
   const list = listData?.data || [];
   const projectNum = listData?.number || 0;
   const participateNum = listData?.joined || 0;
@@ -114,7 +132,13 @@ const ListCardList = () => {
                           src="https://i.loli.net/2021/10/27/kJWcOx3RA6GwFEV.jpg"
                         />
                       }
-                      title={<a>{item.name}</a>}
+                      title={
+                        <>
+                          <a href={'/project/detail/' + item.id}>{item.name} </a>
+                          {'   '}
+                          {ProjectType(item.type)}
+                        </>
+                      }
                       description={
                         <>
                           <div className={styles.cardInfo}>
