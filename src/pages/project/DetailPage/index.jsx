@@ -48,7 +48,7 @@ import AlertDescription from '../../upload/Upload/AlertDescription';
 import AlertDescriptionTwo from '../../upload/Upload/AlertDescriptionTwo';
 import ListInfiniteLoad from '../../upload/List/ListInfiniteLoad';
 import ReactImageAnnotate from 'react-image-annotate';
-
+import { exportCOCO } from './export';
 import moment from 'moment';
 import styles from './style.less';
 const { Step } = Steps;
@@ -74,6 +74,7 @@ const mobileMenu = (dispatch) => (
     <Menu.Item key="2">删除</Menu.Item>
     <Menu.Item key="3">开始标记</Menu.Item>
     <Menu.Item key="5">审核</Menu.Item>
+    <Menu.Item key="6">导出</Menu.Item>
   </Menu>
 );
 const action = (dispatch) => (
@@ -112,6 +113,7 @@ const action = (dispatch) => (
             </Button>
             <Button onClick={(e) => dispatch(2)}>删除</Button>
             <Button onClick={(e) => dispatch(5)}>审核</Button>
+            <Button onClick={(e) => dispatch(6)}>导出</Button>
           </ButtonGroup>
           <Button onClick={(e) => dispatch(3)} type="primary">
             开始标记
@@ -244,6 +246,12 @@ const DetailPage = (props) => {
   //是否提交的时候保存
   const [uploadOnSave, setUploadOnSave] = useState(false);
   const [reviewOnWork, setReviewOnWork] = useState(false);
+
+  //选择导出是否展示
+  const [chooseExportVisiable, setchooseExportVisiable] = useState(false);
+  //选择导出的格式
+  const [chooseExportType, setChooseExportType] = useState(1);
+
   const access = useAccess();
   const {
     data: currentProject,
@@ -323,12 +331,21 @@ const DetailPage = (props) => {
               return {
                 ...r,
                 regions: JSON.parse(r.regions ? r.regions : '[]') || [],
+                pixelSize: JSON.parse(r.pixelSize ? r.pixelSize : '{}') || {},
               };
             }),
         );
         setUploadOnSave(false);
         setReviewOnWork(true);
         onTabChange('work');
+        break;
+
+      case 6:
+        if (currentProject?.type != 4) {
+          message.error('当前项目状态不为已完成，请先完成审核后再进行');
+          return;
+        }
+        setchooseExportVisiable(true);
         break;
       default:
         message.error({
@@ -423,6 +440,32 @@ const DetailPage = (props) => {
     setChangeStatusVisible(false);
   };
 
+  const onCeModalOk = async () => {
+    if (loadingProject || !currentProject) {
+      message.error({
+        duration: 4,
+        content: '项目内容获取失败，请刷新重试',
+      });
+      return;
+    }
+    try {
+      switch (chooseExportType) {
+        case 1:
+          exportCOCO(currentProject);
+          break;
+        case 2:
+          message.info('开发中');
+        default:
+          break;
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const onCeModalCancel = () => {
+    setchooseExportVisiable(false);
+  };
   const onSnModalOk = async () => {
     if (
       choosedNumber == 0 ||
@@ -444,6 +487,7 @@ const DetailPage = (props) => {
             return {
               ...r,
               regions: JSON.parse(r.regions ? r.regions : '[]') || [],
+              pixelSize: JSON.parse(r.pixelSize ? r.pixelSize : '{}') || {},
             };
           }),
         );
@@ -552,6 +596,7 @@ const DetailPage = (props) => {
         return {
           ...r,
           regions: JSON.parse(r.regions ? r.regions : '[]') || [],
+          pixelSize: JSON.parse(r.pixelSize ? r.pixelSize : '{}') || {},
         };
       }),
     );
@@ -653,6 +698,7 @@ const DetailPage = (props) => {
             return {
               id: r.id,
               regions: JSON.stringify(r.regions),
+              pixelSize: JSON.stringify(r.pixelSize),
             };
           });
           try {
@@ -761,6 +807,22 @@ const DetailPage = (props) => {
             value={choosedNumber}
             onChange={setChoosedNumber}
           />
+        </Modal>
+      )}
+      {!loadingProject && chooseExportVisiable && (
+        <Modal
+          title="选择导出格式"
+          visible={chooseExportVisiable}
+          onOk={onCeModalOk}
+          onCancel={onCeModalCancel}
+        >
+          <Select
+            value={chooseExportType}
+            onChange={(e) => setChooseExportType(e)}
+            style={{ width: 150 }}
+          >
+            <Select.Option value={1}>COCO object格式</Select.Option>
+          </Select>
         </Modal>
       )}
     </>

@@ -21,7 +21,7 @@ class InfiniteListExample extends React.Component {
 
   componentDidMount() {
     try {
-      this.fetchData((res) => {
+      this.fetchData().then((res) => {
         console.log(res);
         if (res.status === 'success') {
           this.setState({
@@ -46,51 +46,53 @@ class InfiniteListExample extends React.Component {
     }
   }
 
-  fetchData = (callback) => {
-    fetchListData(
-      this.props.id,
-      { current: this.state.current, pageSize: this.state.pageSize },
-      {
-        contentType: 'application/json',
-      },
-    ).then((r) => callback(r));
-  };
-  handleInfiniteOnLoad = () => {
+  fetchData = () =>
+    new Promise((resolve, reject) => {
+      fetchListData(
+        this.props.id,
+        { current: this.state.current, pageSize: this.state.pageSize },
+        {
+          contentType: 'application/json',
+        },
+      ).then((r) => resolve(r));
+    });
+
+  handleInfiniteOnLoad = async () => {
     let { data } = this.state;
     this.setState({
       loading: true,
     });
 
     try {
-      this.fetchData((res) => {
-        console.log(res);
-        if (res.status === 'success') {
-          this.setState({
-            data: this.state.data.concat(res.data.data),
-            total: res.data.total,
-            current: this.state.current + 1,
-            loading: false,
-          });
-          if (res.data.data.length < this.state.pageSize) {
-            notification.warning({
-              duration: 5,
-              description: '已经到底了',
-            });
-            this.setState({ hasMore: false });
-          }
-          console.log(this.state.data.concat(res.data.data));
-        } else {
-          notification.error({
-            duration: 4,
-            message: '数据加载失败',
-            description: '数据加载失败，请稍后重试',
-          });
-          this.setState({
-            loading: false,
-            data: [],
+      let res = await this.fetchData();
+
+      console.log(res);
+      if (res.status === 'success') {
+        this.setState({
+          data: this.state.data.concat(res.data.data),
+          total: res.data.total,
+          current: this.state.current + 1,
+          loading: false,
+          hasMore: res.data.data.length < this.state.pageSize ? false : true,
+        });
+        if (res.data.data.length < this.state.pageSize) {
+          notification.warning({
+            duration: 5,
+            description: '已经到底了',
           });
         }
-      });
+        console.log(this.state.data.concat(res.data.data));
+      } else {
+        notification.error({
+          duration: 4,
+          message: '数据加载失败',
+          description: '数据加载失败，请稍后重试',
+        });
+        this.setState({
+          loading: false,
+          data: [],
+        });
+      }
     } catch (error) {
       notification.error({
         duration: 4,
