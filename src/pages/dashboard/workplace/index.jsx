@@ -8,28 +8,12 @@ import styles from './style.less';
 import { queryProjectNotice, queryActivities, fakeChartData } from './service';
 const links = [
   {
-    title: '操作一',
-    href: '',
+    title: '创建tag',
+    href: '/tag/tag-list',
   },
   {
-    title: '操作二',
-    href: '',
-  },
-  {
-    title: '操作三',
-    href: '',
-  },
-  {
-    title: '操作四',
-    href: '',
-  },
-  {
-    title: '操作五',
-    href: '',
-  },
-  {
-    title: '操作六',
-    href: '',
+    title: '上传图片',
+    href: '/upload/image',
   },
 ];
 
@@ -70,16 +54,23 @@ const PageHeaderContent = ({ currentUser }) => {
   );
 };
 
-const ExtraContent = () => (
+const ExtraContent = (props) => (
   <div className={styles.extraContent}>
     <div className={styles.statItem}>
-      <Statistic title="项目数" value={56} />
+      <Statistic title="项目总数" value={props.data?.proejcts ? props.data.proejcts.length : 0} />
     </div>
     <div className={styles.statItem}>
-      <Statistic title="团队内排名" value={8} suffix="/ 24" />
+      <Statistic
+        title="团队排名"
+        value={1}
+        suffix={`/  ${props.data?.totalUser ? props.data.totalUser : 24}`}
+      />
     </div>
     <div className={styles.statItem}>
-      <Statistic title="项目访问" value={2223} />
+      <Statistic
+        title="参与项目"
+        value={props.data?.participateNum ? props.data.participateNum : 0}
+      />
     </div>
   </div>
 );
@@ -92,10 +83,10 @@ const Workplace = () => {
     setInitialState,
   } = useModel('@@initialState');
 
-  const { loading: projectLoading, data: projectNotice = [] } = useRequest(queryProjectNotice);
-  const { loading: activitiesLoading, data: activities = [] } = useRequest(queryActivities);
-  const { data } = useRequest(fakeChartData);
-
+  const { loading: projectLoading, data: projectNotice = {} } = useRequest(queryProjectNotice);
+  const { loading: activitiesLoading, data: activities = [] } = queryActivities();
+  const data = fakeChartData();
+  console.log(data);
   const renderActivities = (item) => {
     const events = item.template.split(/@\{([^{}]*)\}/gi).map((key) => {
       if (item[key]) {
@@ -131,10 +122,10 @@ const Workplace = () => {
 
   return (
     <>
-      {loading ? null : (
+      {loading || projectLoading ? null : (
         <PageContainer
           content={<PageHeaderContent currentUser={currentUser} />}
-          extraContent={<ExtraContent />}
+          extraContent={<ExtraContent data={projectNotice} />}
         >
           <Row gutter={24}>
             <Col xl={16} lg={24} md={24} sm={24} xs={24}>
@@ -145,13 +136,13 @@ const Workplace = () => {
                 }}
                 title="进行中的项目"
                 bordered={false}
-                extra={<Link to="/">全部项目</Link>}
+                extra={<Link to="/project/list">全部项目</Link>}
                 loading={projectLoading}
                 bodyStyle={{
                   padding: 0,
                 }}
               >
-                {projectNotice.map((item) => (
+                {projectNotice.proejcts.map((item) => (
                   <Card.Grid className={styles.projectGrid} key={item.id}>
                     <Card
                       bodyStyle={{
@@ -162,17 +153,24 @@ const Workplace = () => {
                       <Card.Meta
                         title={
                           <div className={styles.cardTitle}>
-                            <Avatar size="small" src={item.logo} />
-                            <Link to={item.href}>{item.title}</Link>
+                            <Avatar
+                              size="small"
+                              src={
+                                'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png'
+                              }
+                            />
+                            <Link to={'/project/detail/' + item.id}>{item.name}</Link>
                           </div>
                         }
                         description={item.description}
                       />
                       <div className={styles.projectItemContent}>
-                        <Link to={item.memberLink}>{item.member || ''}</Link>
-                        {item.updatedAt && (
-                          <span className={styles.datetime} title={item.updatedAt}>
-                            {moment(item.updatedAt).fromNow()}
+                        <Link to={'/project/detail/' + item.id}>
+                          {'图片总数' + item.images.length}
+                        </Link>
+                        {item.createdTime && (
+                          <span className={styles.datetime} title={item.createdTime}>
+                            {moment(item.createdTime).fromNow()}
                           </span>
                         )}
                       </div>
@@ -186,7 +184,7 @@ const Workplace = () => {
                 }}
                 bordered={false}
                 className={styles.activeCard}
-                title="动态"
+                title="动态（静态数据）"
                 loading={activitiesLoading}
               >
                 <List
@@ -209,14 +207,14 @@ const Workplace = () => {
                   padding: 0,
                 }}
               >
-                <EditableLinkGroup onAdd={() => {}} links={links} linkElement={Link} />
+                <EditableLinkGroup links={links} />
               </Card>
               <Card
                 style={{
                   marginBottom: 24,
                 }}
                 bordered={false}
-                title="XX 指数"
+                title="工作指数（静态数据）"
                 loading={data?.radarData?.length === 0}
               >
                 <div className={styles.chart}>
@@ -236,28 +234,6 @@ const Workplace = () => {
                       position: 'bottom-center',
                     }}
                   />
-                </div>
-              </Card>
-              <Card
-                bodyStyle={{
-                  paddingTop: 12,
-                  paddingBottom: 12,
-                }}
-                bordered={false}
-                title="团队"
-                loading={projectLoading}
-              >
-                <div className={styles.members}>
-                  <Row gutter={48}>
-                    {projectNotice.map((item) => (
-                      <Col span={12} key={`members-item-${item.id}`}>
-                        <Link to={item.href}>
-                          <Avatar src={item.logo} size="small" />
-                          <span className={styles.member}>{item.member}</span>
-                        </Link>
-                      </Col>
-                    ))}
-                  </Row>
                 </div>
               </Card>
             </Col>

@@ -32,7 +32,6 @@ export async function getInitialState() {
 
     return undefined;
   }; // 如果是登录页面，不执行
-  console.log(123);
   if (nonLoginPath.indexOf(history.location.pathname) === -1) {
     const currentUser = await fetchUserInfo();
     return {
