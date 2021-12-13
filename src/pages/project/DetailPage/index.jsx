@@ -48,7 +48,7 @@ import AlertDescription from '../../upload/Upload/AlertDescription';
 import AlertDescriptionTwo from '../../upload/Upload/AlertDescriptionTwo';
 import ListInfiniteLoad from '../../upload/List/ListInfiniteLoad';
 import ReactImageAnnotate from 'react-image-annotate';
-import { exportCOCO } from './export';
+import { exportCOCO, exportVOC } from './export';
 import moment from 'moment';
 import styles from './style.less';
 const { Step } = Steps;
@@ -454,9 +454,10 @@ const DetailPage = (props) => {
           exportCOCO(currentProject);
           break;
         case 2:
-          message.info('开发中');
-        default:
+          exportVOC(currentProject);
           break;
+        default:
+          message.info('开发中');
       }
     } catch (e) {
       console.log(e);
@@ -822,6 +823,7 @@ const DetailPage = (props) => {
             style={{ width: 150 }}
           >
             <Select.Option value={1}>COCO object格式</Select.Option>
+            <Select.Option value={2}>VOC object格式</Select.Option>
           </Select>
         </Modal>
       )}

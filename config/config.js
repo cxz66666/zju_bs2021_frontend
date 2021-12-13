@@ -166,7 +166,7 @@ export default defineConfig({
     },
     {
       path: '/',
-      redirect: '/dashboard/analysis',
+      redirect: '/dashboard/workplace',
     },
     {
       name: '上传管理',
