@@ -37,7 +37,13 @@ const Info = ({ title, value, bordered }) => (
 const ListContent = ({ data: { userType, userPhone } }) => (
   <div className={styles.listContent}>
     <div className={styles.listContentItem}>
-      {userType == 1 ? <Tag color="blue">普通用户</Tag> : <Tag color="green">管理员用户</Tag>}
+      {userType == 1 ? (
+        <Tag color="blue">普通用户</Tag>
+      ) : userType == 2 ? (
+        <Tag color="green">管理员用户</Tag>
+      ) : (
+        <Tag color="red">系统管理员</Tag>
+      )}
     </div>
     <div className={styles.listContentItem}>
       <span>手机号</span>
@@ -181,7 +187,7 @@ export const UserList = () => {
         notification.error({
           duration: 4,
           message: '增加失败',
-          description: msg.msg,
+          description: res.msg,
         });
       } else {
         notification.success({
@@ -190,13 +196,14 @@ export const UserList = () => {
         });
         setDone(true);
         refreshList();
+        refreshNum();
       }
     } catch (error) {
       console.log(error);
       notification.error({
         duration: 4,
         message: '增加失败',
-        description: msg.msg,
+        description: error,
       });
     }
   };

@@ -63,7 +63,7 @@ const ExtraContent = (props) => (
       <Statistic
         title="团队排名"
         value={1}
-        suffix={`/  ${props.data?.totalUser ? props.data.totalUser : 24}`}
+        suffix={`/  ${props.data?.totalUser ? props.data.totalUser : 0}`}
       />
     </div>
     <div className={styles.statItem}>
