@@ -39,10 +39,8 @@ export function formatWan(val) {
 
 const Applications = () => {
   // 获取tab列表数据
-  const { data: listData } = useRequest(() => {
-    return queryFakeList({
-      count: 30,
-    });
+  const { data: listData } = queryFakeList({
+    count: 30,
   });
   const itemMenu = (
     <Menu>

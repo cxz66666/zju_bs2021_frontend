@@ -19,24 +19,23 @@ class InfiniteListExample extends React.Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount = async () => {
     try {
-      this.fetchData().then((res) => {
-        console.log(res);
-        if (res.status === 'success') {
-          this.setState({
-            data: res.data.data,
-            total: res.data.total,
-            current: this.state.current + 1,
-          });
-        } else {
-          notification.error({
-            duration: 4,
-            message: '数据加载失败',
-            description: '数据加载失败，请稍后重试',
-          });
-        }
-      });
+      let res = await this.fetchData();
+      console.log(res);
+      if (res.status === 'success') {
+        this.setState({
+          data: res.data.data,
+          total: res.data.total,
+          current: this.state.current + 1,
+        });
+      } else {
+        notification.error({
+          duration: 4,
+          message: '数据加载失败',
+          description: '数据加载失败，请稍后重试',
+        });
+      }
     } catch (error) {
       notification.error({
         duration: 4,
@@ -44,7 +43,7 @@ class InfiniteListExample extends React.Component {
         description: '数据加载失败，请稍后重试',
       });
     }
-  }
+  };
 
   fetchData = () =>
     new Promise((resolve, reject) => {

@@ -6,6 +6,7 @@ import {
   ExclamationCircleOutlined,
   SyncOutlined,
   DownloadOutlined,
+  RollbackOutlined,
 } from '@ant-design/icons';
 import {
   Badge,
@@ -239,8 +240,7 @@ const DetailPage = (props) => {
   const [changeStatusVisible, setChangeStatusVisible] = useState(false);
   const [Images, setImages] = useState([]);
   const [projectStatus, changeProjectStatus] = useState(1);
-  const { data = {}, loading } = useRequest(queryAdvancedProfile);
-  const { advancedOperation1, advancedOperation2, advancedOperation3 } = data;
+
   const [selectedImage, setSelectedImage] = useState(0);
 
   //是否提交的时候保存
@@ -611,6 +611,7 @@ const DetailPage = (props) => {
   };
   const image = (
     <ListInfiniteLoad
+      key="123"
       id={currentProject?.id ? currentProject.id : 0}
       map={currentProject?.annotationMap ? currentProject.annotationMap : {}}
       onClickView={onClickViewAnnotation}
@@ -653,11 +654,27 @@ const DetailPage = (props) => {
   const work = (
     <div className={styles.main}>
       <div>
-        共计：{Images.length || 0}, 当前:{selectedImage + 1}，进度:
+        共计：{Images.length || 0}, 当前:{selectedImage + 1}, 当前图片状态:
+        {Images[selectedImage]?.type === 0 ? (
+          <Tag color="blue">正在标记</Tag>
+        ) : (
+          <Tag color="red">审核通过</Tag>
+        )}
+        ，进度:
+        <Button
+          style={{ float: 'right', margin: 20 }}
+          icon={<RollbackOutlined />}
+          type="primary"
+          shape="round"
+          onClick={(e) => {
+            onTabChange('image');
+          }}
+        >
+          返回图片页
+        </Button>
         {reviewOnWork ? (
           <Button
-            size="large"
-            style={{ float: 'right' }}
+            style={{ float: 'right', margin: 20 }}
             shape="round"
             icon={<DownloadOutlined />}
             type="primary"
@@ -682,6 +699,7 @@ const DetailPage = (props) => {
         labelImages
         hideClone
         hideSettings
+        enabledTools={['select', 'create-point', 'create-box', 'create-polygon']}
         selectedImage={selectedImage}
         onNextImage={handleNext}
         onPrevImage={handlePrev}
@@ -730,7 +748,9 @@ const DetailPage = (props) => {
       />
     </div>
   );
-  const publicImage = <ListInfiniteLoad id={0} pid={currentProject?.id ? currentProject.id : 0} />;
+  const publicImage = (
+    <ListInfiniteLoad key="456" id={0} pid={currentProject?.id ? currentProject.id : 0} />
+  );
   const content = {
     image: image,
     detail: detail,

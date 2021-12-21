@@ -8,11 +8,10 @@ import styles from './index.less';
 
 const Projects = () => {
   // 获取tab列表数据
-  const { data: listData } = useRequest(() => {
-    return queryFakeList({
-      count: 30,
-    });
+  const { data: listData } = queryFakeList({
+    count: 30,
   });
+
   return (
     <List
       className={styles.coverCardList}
