@@ -91,7 +91,7 @@ export const UserList = () => {
         notification.error({
           duration: 4,
           message: '删除失败',
-          description: msg.msg,
+          description: '用户已经参与了项目，不可进行删除',
         });
       }
       await refreshList();
@@ -122,7 +122,7 @@ export const UserList = () => {
           notification.error({
             duration: 4,
             message: '更改失败',
-            description: msg.msg,
+            description: '修改失败，请联系系统管理员',
           });
         }
         await refreshList();
@@ -187,7 +187,7 @@ export const UserList = () => {
         notification.error({
           duration: 4,
           message: '增加失败',
-          description: res.msg,
+          description: '添加用户失败，请自行排查http请求',
         });
       } else {
         notification.success({

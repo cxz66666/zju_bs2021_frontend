@@ -370,7 +370,7 @@ const DetailPage = (props) => {
             notification.error({
               duration: 4,
               message: '删除失败',
-              description: res.msg,
+              description: '任务删除失败，请查看控制台获取报错信息',
             });
           } else {
             notification.success({
@@ -421,7 +421,7 @@ const DetailPage = (props) => {
         notification.error({
           duration: 4,
           message: '项目内容获取失败，请刷新重试',
-          content: res.msg,
+          content: '',
         });
       }
       setChangeStatusVisible(false);
@@ -726,7 +726,7 @@ const DetailPage = (props) => {
             if (ans.status != 'success') {
               notification.error({
                 duration: 4,
-                description: ans.msg,
+                description: '保存失败，请重试',
                 message: '保存失败',
               });
             } else {

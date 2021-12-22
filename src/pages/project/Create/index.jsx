@@ -98,7 +98,7 @@ const Create = () => {
         notification.error({
           duration: 4,
           message: '创建错误',
-          content: res.msg,
+          content: '创建任务失败，请联系系统管理员',
         });
         return;
       }

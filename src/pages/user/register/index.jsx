@@ -150,7 +150,7 @@ const Register = () => {
         notification.error({
           duration: 5,
           message: '注册失败',
-          description: data.msg || '未知错误',
+          description: '请联系管理员或请自行排查http请求',
         });
       }
     },

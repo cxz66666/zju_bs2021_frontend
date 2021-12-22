@@ -24,7 +24,7 @@ export default (props) => {
           notification.error({
             duration: 5,
             message: '上传失败',
-            description: info.file.response.msg,
+            description: '请稍后重试',
           });
         } else {
           notification.success({

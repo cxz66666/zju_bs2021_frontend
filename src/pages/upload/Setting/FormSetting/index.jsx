@@ -47,7 +47,7 @@ const Demo = () => {
         notification.error({
           duration: 4,
           message: '更新失败',
-          description: res.msg,
+          description: '请自行排查http请求',
         });
       } else {
         notification.success({

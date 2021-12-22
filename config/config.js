@@ -160,7 +160,7 @@ export default defineConfig({
           icon: 'smile',
           path: '/users/user-list',
           component: './users/UserList',
-          access: 'canAdmin',
+          access: 'canSysAdmin',
         },
       ],
     },
