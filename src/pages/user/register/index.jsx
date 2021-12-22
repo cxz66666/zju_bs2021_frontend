@@ -289,7 +289,7 @@ const Register = () => {
                     marginTop: 10,
                   }}
                 >
-                  <span>请至少输入 6 个字符。请不要使用容易被猜到的密码。</span>
+                  <span>请至少输入 6 个字符，同时包含数字和字母。请不要使用容易被猜到的密码。</span>
                 </div>
               </div>
             )
@@ -314,7 +314,11 @@ const Register = () => {
               },
             ]}
           >
-            <Input size="large" type="password" placeholder="至少6位密码，区分大小写" />
+            <Input
+              size="large"
+              type="password"
+              placeholder="至少6位密码，区分大小写，同时包含数字和字母"
+            />
           </Form.Item>
         </Popover>
         <Form.Item
