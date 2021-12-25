@@ -12,7 +12,7 @@ export function exportCOCO(currentProject) {
     version: '1.0',
     year: 2021,
     contributor: 'Xuzheng Chen',
-    date_created: `${date.getFullYear()}/${date.getMonth()}/${date.getDay}`,
+    date_created: `${date.getFullYear()}/${date.getMonth()}/${date.getDay()}`,
   };
   let licenses = [
     {
@@ -23,7 +23,7 @@ export function exportCOCO(currentProject) {
   ];
 
   let images = currentProject.images.map((r) => {
-    let ret = { lincese: 1, file_name: r.name, id: r.id, date_captured: r.uploadTime };
+    let ret = { licenses: 1, file_name: r.name, id: r.id, date_captured: r.uploadTime };
     let annotatioin = currentProject.annotationMap[r.id];
     if (annotatioin) {
       let pixelSize = JSON.parse(annotatioin.pixelSize ? annotatioin.pixelSize : '{}') || {};
